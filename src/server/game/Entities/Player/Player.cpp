@@ -13204,16 +13204,18 @@ void Player::InitGlyphsForLevel()
     uint32 value = 0;
 
     // 0x3F = 0x01 | 0x02 | 0x04 | 0x08 | 0x10 | 0x20 for 80 level
-    if (level >= 15)
-        value |= (0x01 | 0x02);
+    if (level >= 10)
+        value |= 0x01;
+    if (level >= 20)
+        value |= 0x02;
     if (level >= 30)
         value |= 0x08;
-    if (level >= 50)
+    if (level >= 40)
         value |= 0x04;
-    if (level >= 70)
-        value |= 0x10;
-    if (level >= 80)
+    if (level >= 50)
         value |= 0x20;
+    if (level >= 60)
+        value |= 0x10;
 
     SetUInt32Value(PLAYER_GLYPHS_ENABLED, value);
 }
@@ -13528,7 +13530,18 @@ LootItem* Player::StoreLootItem(uint8 lootSlot, Loot* loot, InventoryResult& msg
 
 uint32 Player::CalculateTalentsPoints() const
 {
-    uint32 base_talent = GetLevel() < 10 ? 0 : GetLevel() - 9;
+    // Past Level 9, players get 1 extra ralent point every 5 levels
+    // Resulting in 71 talents at lvl 60
+    uint8 base_talent = GetLevel();
+    if (GetLevel() >= 10 && GetLevel() <= 60) {
+        for (uint8 i = 10; i <= GetLevel(); i += 5) {
+            base_talent++;
+        }
+    }
+    // No talent points are given past 60
+    else if (GetLevel() > 60){
+        base_talent = 71;
+    }
 
     uint32 talentPointsForLevel = 0;
     if (getClass() != CLASS_DEATH_KNIGHT || GetMapId() != 609)
